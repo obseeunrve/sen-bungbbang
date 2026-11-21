@@ -88,6 +88,11 @@ body{background:var(--page);display:flex;align-items:center;justify-content:cent
 #sResImg{position:relative;height:100%;aspect-ratio:1402/1122;background:center/100% 100% no-repeat}
 #sResTxt{position:absolute;left:4%;top:66%;width:50%;text-align:center;background:rgba(255,255,255,.92);color:#c93d7f;border-radius:99px;font-size:3cqw;padding:1cqw 0}
 #sResBtns{position:absolute;left:4%;top:81%;width:50%;display:flex;gap:1.4cqw;justify-content:center}#sResBtns .btn{font-size:2.4cqw;white-space:nowrap;padding:.8cqw 1.6cqw}
+#sShareRow{position:absolute;left:4%;top:90.5%;width:50%;display:flex;gap:1.4cqw;justify-content:center}#sShareRow .btn2{font-size:2.2cqw;white-space:nowrap}
+#sResToast{position:absolute;left:4%;top:59%;width:50%;text-align:center;background:rgba(255,255,255,.95);color:#c93d7f;border-radius:99px;font-size:2.4cqw;padding:.8cqw 0;z-index:3}
+#sSaveView{position:absolute;left:0;top:0;right:0;bottom:0;z-index:5;background:rgba(40,10,25,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2cqw;cursor:pointer}
+#sSaveView img{max-width:88%;max-height:74%;border-radius:2cqw;-webkit-touch-callout:default}#sSaveMsg{color:#fff;font-size:2.6cqw}
+#sSaveView[hidden],#sResToast[hidden]{display:none}
 .cust{background:#fff;border:.4cqw solid #ff8fb8;border-radius:2.4cqw;padding:1cqw 1.6cqw;font-size:2.4cqw;color:#c93d7f}
 .bar{height:.9cqw;background:#ffd3e6;border-radius:9px;margin-top:.6cqw}.bar i{display:block;height:100%;background:#ff7fb0;border-radius:9px}
 #sBox{position:absolute;left:0;top:0;right:0;bottom:0;z-index:70;background:rgba(40,10,25,.78);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4cqw;color:#fff;font-size:2.8cqw;text-align:center}
@@ -111,7 +116,7 @@ body{background:var(--page);display:flex;align-items:center;justify-content:cent
 <body>
 <div class="stage" id="title" style="--r:1.7769"><img id="start" class="abs"></div>
 <div class="stage" id="intro" style="--r:1.7204" hidden><div id="nameTag">세은</div><div id="dlg"></div><div id="nx">▼</div><div id="choices" hidden><button class="choice" id="yes">응</button><button class="choice" id="no">아니</button></div><div id="backs" hidden><button class="choice" id="back">이전으로 돌아가기</button><button class="choice" id="home2">처음으로 돌아가기</button></div></div>
-<div class="stage" id="sell" style="--r:1.7769" hidden><div class="pill" id="sTime" style="left:2%;top:auto;bottom:3%">⏱ 120</div><div class="pill" id="sScore" style="left:15%;top:auto;bottom:3%">💰 0점</div><img id="sMenuBtn"><div id="sMold"><img id="sMoldImg"></div><div id="sCust"></div><div id="sToast" hidden></div><div id="sBox" hidden></div><div id="sRes" hidden><div id="sResImg"><div id="sResTxt"></div><div id="sResBtns"></div></div></div></div>
+<div class="stage" id="sell" style="--r:1.7769" hidden><div class="pill" id="sTime" style="left:2%;top:auto;bottom:3%">⏱ 120</div><div class="pill" id="sScore" style="left:15%;top:auto;bottom:3%">💰 0점</div><img id="sMenuBtn"><div id="sMold"><img id="sMoldImg"></div><div id="sCust"></div><div id="sToast" hidden></div><div id="sBox" hidden></div><div id="sRes" hidden><div id="sResImg"><div id="sResTxt"></div><div id="sResBtns"></div><div id="sShareRow"><button class="btn2" id="sShare">공유하기</button><button class="btn2" id="sSave">이미지 저장</button></div><div id="sResToast" hidden></div></div><div id="sSaveView" hidden><div id="sSaveMsg">이미지를 꾹 눌러서 저장해요</div><img id="sSaveImg" alt=""></div></div></div>
 <div class="stage" id="cook" style="--r:1.2496" hidden>
   <div class="pill" id="hud"></div>
   <button class="pill" id="home">처음으로</button>
@@ -384,9 +389,37 @@ function serve9(s,st){
   const c=sl.cust[ci],pts=ok?(s.e<20?100:s.e<24?70:40)+(c.mem?BONUS:0):0;
   sl.score+=pts;sl.sold++;c.left--;if(c.left<=0){c.el.remove();sl.cust.splice(ci,1)}sClr(s);
   sT(ok?(c.mem?'⭐ 보너스! +'+pts+'점!':'+'+pts+'점!'):'앗, 주문이랑 달라요 +0점');sRender()}
-function sEnd(){clearInterval(sl.iv);grillStop();sl.g=0;const ok=sl.score>=SUCCESS;bgmPlay(ok?'win':'fail');
+function sEnd(){clearInterval(sl.iv);grillStop();sl.g=0;const ok=sl.score>=SUCCESS;lastSell={score:sl.score,sold:sl.sold,ok};$('#sSaveView').hidden=true;$('#sResToast').hidden=true;bgmPlay(ok?'win':'fail');
   $('#sResImg').style.backgroundImage='url('+(ok?SA.win:SA.lose)+')';$('#sResTxt').textContent='총 '+sl.score+'점 · '+sl.sold+'개 판매';
   const bt=$('#sResBtns');bt.innerHTML='';[['다시 하기',sellStart],['처음으로',()=>{show('title');bgmStop()}]].forEach(([t,fn])=>{const x=document.createElement('button');x.className='btn';x.textContent=t;x.onclick=()=>{sfx('click');fn()};bt.appendChild(x)});$('#sRes').hidden=false}
+let lastSell=null;
+const sRT=m=>{const e=$('#sResToast');e.textContent=m;e.hidden=false;clearTimeout(sRT.t);sRT.t=setTimeout(()=>{e.hidden=true},2400)};
+function rrect(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath()}
+async function shotSell(){
+  const L=lastSell,rr=$('#sResImg').getBoundingClientRect(),W=1402,H=1122,sc=W/rr.width;
+  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  const bg=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=L.ok?SA.win:SA.lose});
+  const el=$('#sResTxt'),cs=getComputedStyle(el),ff=cs.fontFamily;
+  try{await document.fonts.load('40px '+ff,el.textContent+'세은이의 붕어빵을 부탁해!')}catch(e){}
+  x.drawImage(bg,0,0,W,H);
+  const r=el.getBoundingClientRect(),px=(r.left-rr.left)*sc,py=(r.top-rr.top)*sc,pw=r.width*sc,ph=r.height*sc,fs=parseFloat(cs.fontSize)*sc;
+  x.fillStyle='rgba(255,255,255,.92)';rrect(x,px,py,pw,ph,ph/2);x.fill();
+  x.font=fs+'px '+ff;x.fillStyle='#c93d7f';x.textAlign='center';x.textBaseline='middle';x.fillText(el.textContent,px+pw/2,py+ph/2);
+  x.textAlign='left';x.textBaseline='alphabetic';x.lineJoin='round';x.strokeStyle='#fff';x.fillStyle='#c93d7f';
+  x.font='26px '+ff;x.lineWidth=9.5;x.strokeText('세은이의 붕어빵을 부탁해!',W*.04,H*.945);x.fillText('세은이의 붕어빵을 부탁해!',W*.04,H*.945);
+  x.font='18px '+ff;x.lineWidth=7.3;x.strokeText(LINK.replace('https://',''),W*.04,H*.975);x.fillText(LINK.replace('https://',''),W*.04,H*.975);
+  return new Promise(ok=>c.toBlob(ok,'image/png'))
+}
+async function saveSellImg(blob){
+  if(/KAKAOTALK|Instagram|FBAN|FBAV|NAVER|Line\//i.test(navigator.userAgent)){$('#sSaveImg').src=URL.createObjectURL(blob);$('#sSaveView').hidden=false;return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='seeun-bungbbang-sell.png';document.body.appendChild(a);a.click();a.remove();sRT('이미지를 저장했어요!')
+}
+$('#sShare').onclick=async()=>{sfx('click');let blob;try{blob=await shotSell()}catch(e){sRT('이미지를 만들지 못했어요');return}
+  const file=new File([blob],'seeun-bungbbang-sell.png',{type:'image/png'});
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text:'세은이의 붕어빵을 부탁해! 판매모드 '+lastSell.score+'점 🐟\n'+LINK});return}}catch(e){if(e&&e.name==='AbortError')return}
+  await saveSellImg(blob);sRT('공유창이 안 열려서 이미지로 저장했어요')};
+$('#sSave').onclick=async()=>{sfx('click');try{await saveSellImg(await shotSell())}catch(e){sRT('이미지를 만들지 못했어요')}};
+$('#sSaveView').onclick=()=>{$('#sSaveView').hidden=true};
 $('#sMenuBtn').onclick=()=>{sfx('click');if(sl&&$('#sBox').hidden)sMenu(0)};
 $('#askY').onclick=()=>{sfx('click');$('#ask').hidden=true;$('#res').hidden=true;sellStart()};
 $('#askN').onclick=()=>{sfx('click');$('#ask').hidden=true};
