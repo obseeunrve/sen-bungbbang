@@ -320,16 +320,20 @@ const sTip=()=>{};
 const sT=m=>{const e=$('#sToast');e.textContent=m;e.hidden=false;clearTimeout(sT.t);sT.t=setTimeout(()=>{e.hidden=true},1600)};
 function sBx(h,btns){const b=$('#sBox');b.innerHTML=h;btns.forEach(([t,fn])=>{const x=document.createElement('button');x.className='btn';x.textContent=t;x.onclick=()=>{sfx('click');fn()};b.appendChild(x)});b.hidden=false}
 function sMenu(first){sl.paused=true;sBx('<div style="font-size:4cqw;margin-bottom:1cqw">메뉴판</div>'+SELL.map(m=>`<div><img src="${IMG.stg[m.d][3]}" style="height:4cqw;vertical-align:middle;margin-right:.8cqw">${m.n} 붕어빵 = ${DOUGH[m.d]} 반죽 + ${NAMES[m.f]}</div>`).join(''),[[first?'시작!':'닫기',()=>{$('#sBox').hidden=true;sl.paused=false}]]);Object.assign($('#sBox').style,{backgroundImage:'url('+SA.menubg+')',backgroundSize:'100% 100%',color:'#c93d7f',paddingTop:'10%',boxSizing:'border-box'})}
-function sSpawn(){const r=Math.random(),n=r<.6?1:r<.9?2:3,mem=Math.random()<.15,pool=mem?CM:CG,img=pool[Math.floor(Math.random()*pool.length)];
+function sSpawn(){const r=Math.random(),n=r<.6?1:r<.9?2:3,k=sl.k++,mi=sl.mpos.indexOf(k),mem=mi>=0,img=mem?CM[sl.mpick[mi]]:CG[Math.floor(Math.random()*CG.length)];
   const c={m:Math.floor(Math.random()*4),img,mem,n,left:n,p:PAT[n],max:PAT[n],a:false},el=document.createElement('div');el.className='cs';
   el.innerHTML=`<img class="bub" src="${SA.bub}"><div class="ct"></div><div class="pb"><i></i></div><img class="pt" src="${img[0]}">`;$('#sCust').appendChild(el);c.el=el;sl.cust.push(c)}
 const st9=s=>{if(s.f<0)return -1;if(s.e>=BURN)return 4;let i=3;while(T[i]>s.e)i--;return i};
 const sClr=s=>Object.assign(s,{p:0,vis:0,dk:-1,f:-1,fh:0,d:-1,e:0,w:0,key:''});
 const sPlace=b=>{b.style.transform=`translate(${b.pos.dx}px,${b.pos.dy}px)`+(b.classList.contains('sel')?' rotate(-8deg) scale(1.08)':'')};
 function sHome(){sl.bags.forEach(b=>{b.pos={dx:0,dy:0};b.classList.remove('sel');sPlace(b)});sl.bag=-1}
+const MEMN=3;
+function pickMembers(){const idx=CM.map((_,i)=>i).sort(()=>Math.random()-.5).slice(0,Math.min(MEMN,CM.length));let pos;
+  do{pos=[];while(pos.length<idx.length){const v=2+Math.floor(Math.random()*11);if(!pos.includes(v))pos.push(v)}pos.sort((a,b)=>a-b)}while(pos.some((v,i)=>i&&v-pos[i-1]<3));
+  return{mpick:idx,mpos:pos}}
 function sellStart(){
   show('sell');bgmPlay('cook');if(sl)clearInterval(sl.iv);grillStop();
-  sl={t:120,score:0,sold:0,sp:0,paused:true,bag:-1,jar:-1,g:0,slots:Array.from({length:9},()=>({fl:0})),cust:[],bags:[]};
+  sl={...pickMembers(),k:0,t:120,score:0,sold:0,sp:0,paused:true,bag:-1,jar:-1,g:0,slots:Array.from({length:9},()=>({fl:0})),cust:[],bags:[]};
   sl.slots.forEach(sClr);
   $('#sMoldImg').src=MOLD9;$('#sell').style.backgroundImage='url('+SA.bg+')';$('#sMenuBtn').src=SA.menu;$('#sRes').hidden=true;$('#sBox').hidden=true;$('#sCust').innerHTML='';document.querySelectorAll('.slot9,.sbag,.sjar').forEach(e=>e.remove());
   sl.slots.forEach((s,i)=>{const d=document.createElement('div');d.className='slot9';d.style.left=SC[i][0]+'%';d.style.top=SC[i][1]+'%';d.innerHTML='<img class="fish" hidden><img class="fl9" hidden>';d.onclick=()=>sTap(i);$('#sMold').appendChild(d);s.el=d;s.im=d.children[0];s.fi=d.children[1]});
